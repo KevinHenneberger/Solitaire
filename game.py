@@ -28,11 +28,6 @@ class Game:
             Pile("t", [])
         ]
 
-    def setup(self):
-        # insert cards from hand pile into tableau piles
-        for n, tableauPile in enumerate(self.tableauPiles):
-            tableauPile.insertCardFrom(self.handPile, n + 1)
-
     def displayCards(self):
         print("=" * 150)
 
@@ -52,8 +47,11 @@ class Game:
             print(tableauPile)
         print("-" * 150)
 
-    def runLoop(self):
-        self.setup()
+    def gameLoop(self):
+        
+        # insert cards from hand pile into tableau piles
+        for n, tableauPile in enumerate(self.tableauPiles):
+            tableauPile.insertCardFrom(self.handPile, n + 1)
 
         keyMap = {
             "h": self.handPile,
@@ -72,18 +70,9 @@ class Game:
         }
 
         while (True):
-            # if hand pile is empty and the waste is not empty
-            if (self.handPile.isEmpty() and not self.wastePile.isEmpty()):
-                # insert cards from waste pile into hand pile
-                for card in self.wastePile.cards:
-                    card.unflip()
-
-                self.handPile.cards = self.wastePile.cards[::-1]
-                self.wastePile.cards = []
-
-            # flip top card in hand pile
-            if (not self.handPile.isEmpty()):
-                self.handPile.cards[-1].flip()
+            # flip top card in waste pile
+            if (not self.wastePile.isEmpty()):
+                self.wastePile.cards[-1].flip()
 
             # flip top card in tableau piles
             for tableauPile in self.tableauPiles:
@@ -92,11 +81,15 @@ class Game:
 
             self.displayCards()
 
-            # prompt user for input 
+            """
+            # quiting
             while True:
                 action = input("[continue (c) or quit (q)] || ")
                 if (action == "c" or action == "q"):
                     break
+            """
+
+            action = "c"
 
             if (action == "c"):
                 # prompt user for input 
@@ -109,20 +102,23 @@ class Game:
 
                 while True:
                     try: 
-                        numOfCards = int(input("[# of cards] || "))
-                        break
-                    except:
-                        continue
-
-                while True:
-                    try: 
                         toPile = keyMap[input("[move to]    || ")]
                         break
                     except:
                         continue
 
+                if (fromPile.label == "t" and toPile.label == "t"):
+                    while True: 
+                        try: 
+                            numOfCards = int(input("[# of cards] || "))
+                            break
+                        except:
+                            continue
+                else: 
+                    numOfCards = 1
+
                 # commit move 
-                if (toPile.isValidMove(fromPile)):
+                if (toPile.isValidMove(fromPile, numOfCards)):
                     toPile.insertCardFrom(fromPile, numOfCards)
                     print("--- move executed ---")
                 else:
@@ -130,6 +126,7 @@ class Game:
 
                 # if game is won
                 if (len(self.foundationsPiles[0].cards) == 13 and len(self.foundationsPiles[1].cards) == 13 and len(self.foundationsPiles[2].cards) == 13 and len(self.foundationsPiles[3].cards) == 13):
+                    self.displayCards()
                     print("--- congratulations, you won! ---")
                     break
 
